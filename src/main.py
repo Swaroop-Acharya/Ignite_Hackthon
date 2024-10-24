@@ -3,6 +3,7 @@ import fitz  # PyMuPDF
 from PIL import Image
 import pytesseract
 from pdf2image import convert_from_path
+import shutil  # For moving files
 
 # Function to extract text from PDF (text-based)
 def extract_text_from_pdf(pdf_file):
@@ -45,16 +46,26 @@ def process_file(file_path):
 def main():
     input_folder = 'input_files'
     output_folder = 'output'
+    archive_folder = 'archive'
+
+    # Ensure archive folder exists
+    os.makedirs(archive_folder, exist_ok=True)
 
     for file_name in os.listdir(input_folder):
         file_path = os.path.join(input_folder, file_name)
         text = process_file(file_path)
 
+        # Save output to output folder
         output_file = os.path.join(output_folder, f"{os.path.splitext(file_name)[0]}_output.txt")
         with open(output_file, 'w', encoding='utf-8') as f:
             f.write(text)
 
+        # Move the processed file to archive folder
+        archive_path = os.path.join(archive_folder, file_name)
+        shutil.move(file_path, archive_path)
+
         print(f"Processed {file_name} and saved output to {output_file}")
+        print(f"Moved {file_name} to archive folder")
 
 if __name__ == "__main__":
     main()
