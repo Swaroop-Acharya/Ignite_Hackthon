@@ -1,3 +1,6 @@
+Classification: Unable to Detect
+
+Extracted Text:
                                                          Tax Invoice
 Mangaluru Broadband Network Pvt Ltd
 Top Floor,Trade Center,Bunts Hostel Road,Jyothi,Mangalore -575003 
@@ -39,3 +42,5 @@ State Code: 29
                         *This is a computer generated invoice, hence doesn't require manual authorization*
 Usage of the month From 01/10/2024 - 30/10/2024
 01/10/2024
+
+

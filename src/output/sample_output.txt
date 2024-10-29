@@ -1,3 +1,6 @@
+Classification: Unable to Detect
+
+Extracted Text:
 Swaroop
 +91 9353393942 | swaroopa802@gmail.com | linkedin.com/in/Swaroop-Acharya | Portfolio
 Education
@@ -59,3 +62,5 @@ Achievements & Awards
 • Finalist in National Level Airbus 6.0 Hackathon, demonstrating excellence.
 • Received funding from the Karnataka State Council for Science and Technology for the final year project.
 • Participated in Flipkart Grid 4.0 Software Development Challenge.
+
+
