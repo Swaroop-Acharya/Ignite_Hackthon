@@ -10,9 +10,9 @@ from openpyxl import load_workbook
 from openpyxl.styles import Font, PatternFill, Border, Side, Alignment
 
 # Define keywords for classification
-compliance_keywords = [
-    'complaint', 'grievance', 'mad', 'angry', 'upset', 'legal','action','legal action', 'lawyer', 'frustration','attorney',
-    'department of insurance','doi','lawyer', 'regulatory agency', 'lawsuit', 'hire','deadline','action',
+compliant_keywords = [
+    'complaint', 'grievance', 'mad', 'angry', 'upset', 'legal', 'action', 'legal action', 'lawyer', 'frustration', 'attorney',
+    'department of insurance', 'doi', 'lawyer', 'regulatory agency', 'lawsuit', 'hire', 'deadline', 'action',
     'unauthorized', 'inappropriate', 'theft', 'forgery', 'fraud', 'media', 'better business bureau',
     'subpoena', 'attorney letterhead'
 ]
@@ -68,11 +68,11 @@ def process_file(file_path):
 def classify_text(text):
     text_lower = text.lower()
     
-    # Check for compliance keywords first
-    if any(keyword in text_lower for keyword in compliance_keywords):
-        return 'Compliance'
+    # Check for compliant keywords first
+    if any(keyword in text_lower for keyword in compliant_keywords):
+        return 'Compliant'
     
-    # If no compliance keywords are found, classify as Appeal
+    # If no compliant keywords are found, classify as Appeal
     return 'Appeal'
 
 # Style and format the Excel file
@@ -110,13 +110,23 @@ def style_excel(filename):
 
 # Main script
 def main():
-    input_folder = 'input_files'
-    output_folder = 'output'
+    input_folder = 'input'
+    output_folder = 'extracted_text'
     archive_folder = 'archive'
     results_file = 'classification_results.xlsx'
 
+    # Ensure output and archive folders exist
     os.makedirs(output_folder, exist_ok=True)
     os.makedirs(archive_folder, exist_ok=True)
+
+    # Ensure subfolders for classifications exist in the archive folder
+    compliant_folder = os.path.join(archive_folder, 'Compliant')
+    appeal_folder = os.path.join(archive_folder, 'Appeal')
+    unable_to_detect_folder = os.path.join(archive_folder, 'Unable to Detect')
+
+    os.makedirs(compliant_folder, exist_ok=True)
+    os.makedirs(appeal_folder, exist_ok=True)
+    os.makedirs(unable_to_detect_folder, exist_ok=True)
 
     results = []
 
@@ -133,11 +143,20 @@ def main():
         processed_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         results.append([idx, file_name, processed_time, classification])
 
-        archive_path = os.path.join(archive_folder, file_name)
+        # Determine the destination folder based on classification
+        if classification == 'Compliant':
+            destination_folder = compliant_folder
+        elif classification == 'Appeal':
+            destination_folder = appeal_folder
+        else:
+            destination_folder = unable_to_detect_folder
+
+        # Move the processed file to the respective folder in the archive
+        archive_path = os.path.join(destination_folder, file_name)
         shutil.move(file_path, archive_path)
 
         print(f"[INFO] Processed {file_name}, classified as {classification} and saved output to {output_file}")
-        print(f"[INFO] Moved {file_name} to archive folder")
+        print(f"[INFO] Moved {file_name} to {destination_folder}")
 
     if os.path.exists(results_file):
         existing_df = pd.read_excel(results_file, engine='openpyxl')

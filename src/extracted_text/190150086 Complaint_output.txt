@@ -1,4 +1,4 @@
-Classification: Compliance
+Classification: Compliant
 
 Extracted Text:
 9/17/2024 9:14 AM FROM: Fuzion Analytics
