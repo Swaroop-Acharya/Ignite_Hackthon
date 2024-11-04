@@ -11,13 +11,10 @@ from openpyxl.styles import Font, PatternFill, Border, Side, Alignment
 
 # Define keywords for classification
 compliance_keywords = [
-    'complain', 'grievance', 'mad', 'angry', 'upset', 'legal action', 'lawyer', 'frustration',
-    'department of insurance', 'regulatory agency', 'lawsuit', 'deadline for resolution',
+    'complaint', 'grievance', 'mad', 'angry', 'upset', 'legal','action','legal action', 'lawyer', 'frustration','attorney',
+    'department of insurance','doi','lawyer', 'regulatory agency', 'lawsuit', 'hire','deadline','action',
     'unauthorized', 'inappropriate', 'theft', 'forgery', 'fraud', 'media', 'better business bureau',
     'subpoena', 'attorney letterhead'
-]
-appeal_keywords = [
-    'appeal', 'request for review', 'reconsider', 'decision', 'reopen case', 'case review', 'reassessment'
 ]
 
 # Function to extract text from each page of a text-based PDF
@@ -71,12 +68,12 @@ def process_file(file_path):
 def classify_text(text):
     text_lower = text.lower()
     
+    # Check for compliance keywords first
     if any(keyword in text_lower for keyword in compliance_keywords):
         return 'Compliance'
-    elif any(keyword in text_lower for keyword in appeal_keywords):
-        return 'Appeal'
     
-    return 'Unable to Detect'
+    # If no compliance keywords are found, classify as Appeal
+    return 'Appeal'
 
 # Style and format the Excel file
 def style_excel(filename):
