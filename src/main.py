@@ -16,15 +16,25 @@ from threading import Lock
 # Initialize summarizer
 summarizer = pipeline("summarization", model="facebook/bart-large-cnn")
 
-# Define keywords for classification
-compliant_keywords = [
-    'complaint', 'grievance', 'mad', 'angry', 'upset', 'legal', 'action', 'legal action', 'lawyer', 'frustration', 'attorney',
-    'department of insurance', 'doi', 'lawyer', 'regulatory agency', 'lawsuit', 'hire', 'deadline', 'action',
-    'unauthorized', 'inappropriate', 'theft', 'forgery', 'fraud', 'media', 'better business bureau',
-    'subpoena', 'attorney letterhead'
-]
-
 file_lock = Lock()
+
+def load_complaint_keywords(file_path="./keywords/complaint_keywords.txt"):
+    """Load complaint keywords from a text file, each keyword on a new line."""
+    keywords = []
+    if os.path.exists(file_path):
+        with open(file_path, "r") as f:
+            keywords = [line.strip().lower() for line in f if line.strip()]
+    else:
+        print(f"[WARNING] Keywords file '{file_path}' not found. Using default keywords.")
+    return keywords or [
+        'complaint', 'grievance', 'mad', 'angry', 'upset', 'legal', 'action', 'legal action', 'lawyer', 'frustration', 'attorney',
+        'department of insurance', 'doi', 'lawyer', 'regulatory agency', 'lawsuit', 'hire', 'deadline', 'action',
+        'unauthorized', 'inappropriate', 'theft', 'forgery', 'fraud', 'media', 'better business bureau',
+        'subpoena', 'attorney letterhead'
+    ]
+
+# Load complaint keywords from file
+complaint_keywords = load_complaint_keywords()
 
 def extract_text_from_pdf(pdf_file):
     """Extract text from each page of a PDF file, with OCR fallback for image-based pages."""
@@ -77,9 +87,9 @@ def process_file(file_path):
     return text
 
 def classify_text(text):
-    """Classify text based on keywords for 'Compliant' or 'Appeal'."""
+    """Classify text based on keywords for 'complaint' or 'Appeal'."""
     text_lower = text.lower()
-    return 'Compliant' if any(keyword in text_lower for keyword in compliant_keywords) else 'Appeal'
+    return 'Complaint' if any(keyword in text_lower for keyword in complaint_keywords) else 'Appeal'
 
 def summarize_text(text):
     """Generate a summary of the text if it is long enough, with error handling."""
@@ -124,11 +134,11 @@ def style_excel(filename):
     workbook.save(filename)
     workbook.close()
 
-def process_single_file(idx, file_name, input_folder, extracted_folder, compliant_folder, appeal_folder, unable_to_detect_folder):
+def process_single_file(idx, file_name, input_folder, extracted_folder, complaint_folder, appeal_folder, unable_to_detect_folder):
     file_path = os.path.join(input_folder, file_name)
     
     with file_lock:
-        if any(os.path.exists(os.path.join(folder, file_name)) for folder in [compliant_folder, appeal_folder, unable_to_detect_folder]):
+        if any(os.path.exists(os.path.join(folder, file_name)) for folder in [complaint_folder, appeal_folder, unable_to_detect_folder]):
             print(f"[INFO] Skipping already processed file: {file_name}")
             return None
 
@@ -147,7 +157,7 @@ def process_single_file(idx, file_name, input_folder, extracted_folder, complian
     result = [idx, file_name, processed_time, classification, summary]
 
     # Determine the destination folder for archiving
-    destination_folder = compliant_folder if classification == 'Compliant' else appeal_folder
+    destination_folder = complaint_folder if classification == 'Complaint' else appeal_folder
     archive_path = os.path.join(destination_folder, file_name)
     shutil.move(file_path, archive_path)
 
@@ -168,11 +178,11 @@ def main():
     os.makedirs(archive_folder, exist_ok=True)
     os.makedirs(reports_folder, exist_ok=True)
 
-    compliant_folder = os.path.join(archive_folder, 'Compliant')
+    complaint_folder = os.path.join(archive_folder, 'Complaint')
     appeal_folder = os.path.join(archive_folder, 'Appeal')
-    unable_to_detect_folder = os.path.join(archive_folder, 'Unable to Detect')
+    unable_to_detect_folder = os.path.join(archive_folder, 'Manual')
 
-    os.makedirs(compliant_folder, exist_ok=True)
+    os.makedirs(complaint_folder, exist_ok=True)
     os.makedirs(appeal_folder, exist_ok=True)
     os.makedirs(unable_to_detect_folder, exist_ok=True)
 
@@ -189,7 +199,7 @@ def main():
                 idx, file_name,
                 input_folder,
                 extracted_folder,
-                compliant_folder,
+                complaint_folder,
                 appeal_folder,
                 unable_to_detect_folder
             ): file_name
