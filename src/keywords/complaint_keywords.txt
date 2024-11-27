@@ -4,7 +4,6 @@ mad
 angry
 upset
 legal
-action
 legal action
 lawyer
 frustration

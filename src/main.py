@@ -1,6 +1,6 @@
 import os
 import fitz  # PyMuPDF for PDF handling
-from PIL import Image, ImageEnhance
+from PIL import Image
 import pytesseract
 import shutil
 import io
@@ -18,23 +18,17 @@ summarizer = pipeline("summarization", model="facebook/bart-large-cnn")
 
 file_lock = Lock()
 
-def load_complaint_keywords(file_path="./keywords/complaint_keywords.txt"):
-    """Load complaint keywords from a text file, each keyword on a new line."""
-    keywords = []
-    if os.path.exists(file_path):
-        with open(file_path, "r") as f:
-            keywords = [line.strip().lower() for line in f if line.strip()]
-    else:
-        print(f"[WARNING] Keywords file '{file_path}' not found. Using default keywords.")
-    return keywords or [
-        'complaint', 'grievance', 'mad', 'angry', 'upset', 'legal', 'action', 'legal action', 'lawyer', 'frustration', 'attorney',
-        'department of insurance', 'doi', 'lawyer', 'regulatory agency', 'lawsuit', 'hire', 'deadline', 'action',
-        'unauthorized', 'inappropriate', 'theft', 'forgery', 'fraud', 'media', 'better business bureau',
-        'subpoena', 'attorney letterhead'
-    ]
+# Helper function to load keywords
+def load_keywords(file_path):
+    """Load keywords from a file. Raise an error if file is missing."""
+    if not os.path.exists(file_path):
+        raise FileNotFoundError(f"[ERROR] Keywords file '{file_path}' not found. Please provide the required file.")
+    with open(file_path, "r") as f:
+        return [line.strip().lower() for line in f if line.strip()]
 
-# Load complaint keywords from file
-complaint_keywords = load_complaint_keywords()
+# Load complaint and appeal keywords
+complaint_keywords = load_keywords("./keywords/complaint_keywords.txt")
+appeal_keywords = load_keywords("./keywords/appeal_keywords.txt")
 
 def extract_text_from_pdf(pdf_file):
     """Extract text from each page of a PDF file, with OCR fallback for image-based pages."""
@@ -87,9 +81,13 @@ def process_file(file_path):
     return text
 
 def classify_text(text):
-    """Classify text based on keywords for 'complaint' or 'Appeal'."""
+    """Classify text based on keywords for 'Complaint', 'Appeal', or 'Unable to Detect'."""
     text_lower = text.lower()
-    return 'Complaint' if any(keyword in text_lower for keyword in complaint_keywords) else 'Appeal'
+    if any(keyword in text_lower for keyword in complaint_keywords):
+        return 'Complaint'
+    elif any(keyword in text_lower for keyword in appeal_keywords):
+        return 'Appeal'
+    return 'Manual'
 
 def summarize_text(text):
     """Generate a summary of the text if it is long enough, with error handling."""
@@ -157,7 +155,7 @@ def process_single_file(idx, file_name, input_folder, extracted_folder, complain
     result = [idx, file_name, processed_time, classification, summary]
 
     # Determine the destination folder for archiving
-    destination_folder = complaint_folder if classification == 'Complaint' else appeal_folder
+    destination_folder = complaint_folder if classification == 'Complaint' else appeal_folder if classification == 'Appeal' else unable_to_detect_folder
     archive_path = os.path.join(destination_folder, file_name)
     shutil.move(file_path, archive_path)
 
