@@ -1,6 +1,6 @@
-# 🤖 DocuSortAI – Smart Document Classifier & Summarizer
+# 🤖 DocuSort – Smart Document Classifier & Summarizer
 
-**DocuSortAI** is an intelligent automation system that classifies and summarizes scanned documents such as customer correspondence in PDF or TIF formats. Leveraging OCR, NLP, and summarization pipelines, it streamlines customer service workflows by identifying complaints, appeals, or ambiguous content requiring manual review.
+**DocuSort** is an intelligent automation system that classifies and summarizes scanned documents such as customer correspondence in PDF or TIF formats. Leveraging OCR, NLP, and summarization pipelines, it streamlines customer service workflows by identifying complaints, appeals, or ambiguous content requiring manual review.
 
 ---
 
